@@ -39,11 +39,10 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.elevenetc.concepts.keyboard.TouchView
-        android:alpha="0.5"
+        android:alpha="0.0"
         android:id="@+id/touchView"
         android:layout_width="match_parent"
         android:layout_height="@dimen/keyboards_zone_height"
-        android:layout_gravity="bottom"
-        android:background="#2196F3" />
+        android:layout_gravity="bottom" />
 
 </FrameLayout>

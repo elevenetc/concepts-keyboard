@@ -6,8 +6,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
+import android.view.MotionEvent.*
 import android.view.View
 
 class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
@@ -21,7 +21,7 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
     private val keysLine0 = mutableListOf<Key>()
     private val inputBounds = RectF()
 
-    var inputTapHandler:() -> Unit = {}
+    var inputTapHandler: () -> Unit = {}
 
     val keyboardHeight = resources.getDimension(R.dimen.keyboard_height)
     val inputViewHeight = resources.getDimension(R.dimen.input_height)
@@ -61,6 +61,9 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
         canvas.drawCircle(touchX, touchY, 15f, keyPaint)
     }
 
+    var moving = false
+    var lastKey: Key? = null
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
 
 
@@ -74,14 +77,25 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
 
         invalidate()
 
-        if (inputBounds.contains(x, y)) {
+        if (action == ACTION_MOVE) {
+            moving = true
+        } else if (action == ACTION_CANCEL || action == ACTION_UP) {
 
-
-            if(action == MotionEvent.ACTION_UP){
-                inputTapHandler()
+            if (!moving) {
+                if (lastKey != null) {
+                    println("print:" + lastKey!!.ch)
+                }
             }
 
-            //return super.onTouchEvent(event)
+            moving = false
+        }
+
+
+
+        if (inputBounds.contains(x, y)) {
+            if (action == ACTION_UP) {
+                inputTapHandler()
+            }
             return true
         }
 
@@ -97,7 +111,7 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
         y: Float
     ): Boolean {
         var handled = false
-        if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_MOVE) {
+        if (action == ACTION_DOWN || action == ACTION_UP || action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_MOVE) {
 
 
             keysLine0.forEach {
@@ -105,11 +119,38 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
                 it.selected = contains
 
                 if (contains) {
+                    lastKey = it
                     handled = true
                 }
             }
+
+
+            //start tap/motion
+            if (action == ACTION_DOWN) {
+                lastKey = null
+            }
+
+            //end tap/motion
+            if (action == ACTION_UP || action == ACTION_CANCEL) {
+                lastKey?.selected = false
+            }
         }
+
+        if (!handled) {
+            lastKey = null
+        }
+
         return handled
+    }
+
+    class TapKeeper {
+        fun onEvent(event: MotionEvent) {
+            if (event.action == ACTION_DOWN) {
+
+            } else if (event.action == ACTION_UP) {
+
+            }
+        }
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
