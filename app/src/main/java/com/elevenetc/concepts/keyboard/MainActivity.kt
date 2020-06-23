@@ -70,13 +70,11 @@ class MainActivity : AppCompatActivity() {
         var opened = false
 
         init {
-
             keyboardView.inputTapHandler = {
                 if (!opened) {
                     open()
                 }
             }
-
             touchView.receiver = {
                 keyboardView.onTouchEvent(it)
             }
@@ -88,7 +86,6 @@ class MainActivity : AppCompatActivity() {
 
             touchView.intercept = true
             val dimension = touchView.resources.getDimension(R.dimen.keyboard_height)
-
 
 
             //touchView.translationY = dimension

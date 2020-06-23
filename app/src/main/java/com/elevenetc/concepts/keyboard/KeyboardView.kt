@@ -1,14 +1,12 @@
 package com.elevenetc.concepts.keyboard
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.RectF
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.MotionEvent.*
 import android.view.View
+import java.util.*
 
 class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
@@ -52,6 +50,12 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
         textSize = keyTextSize
     }
 
+    val pathPaint = Paint().apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 10f
+        color = Color.BLACK
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawInput(canvas)
@@ -59,7 +63,39 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
         canvas.drawCircle(touchX, touchY, 100f, keyPaint)
         canvas.drawCircle(touchX, touchY, 10f, keyPaint)
         canvas.drawCircle(touchX, touchY, 15f, keyPaint)
+
+        val path = Path()
+
+        var prevTime = 0L
+        var diffTime = 0L
+        for ((index, it) in events.withIndex()) {
+            //TODO: perf: O(x^2) per draw call
+
+            val x = it.x
+            val y = it.y
+            if (index == 0) {
+                path.moveTo(x, y)
+                prevTime = it.time
+            } else {
+
+                diffTime = it.time - prevTime
+
+                if (diffTime > 20) {
+                    canvas.drawCircle(x, y, 10f, keyPaint)
+                    canvas.drawCircle(x, y, 20f, keyPaint)
+                    canvas.drawCircle(x, y, 30f, keyPaint)
+                }
+
+                prevTime = it.time
+
+                path.lineTo(x, y)
+            }
+        }
+
+        canvas.drawPath(path, pathPaint)
     }
+
+
 
     var moving = false
     var lastKey: Key? = null
@@ -91,6 +127,7 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
         }
 
 
+        handled = handleTouchEvent(action, x, y, event.eventTime)
 
         if (inputBounds.contains(x, y)) {
             if (action == ACTION_UP) {
@@ -99,19 +136,22 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
             return true
         }
 
-        handled = handleTouchEvent(action, x, y)
-
         return if (!handled) super.onTouchEvent(event)
         else handled
     }
 
+    data class MovePoint(val x: Float, val y: Float, val time: Long)
+
+    private val events: LinkedList<MovePoint> = LinkedList()
+
     private fun handleTouchEvent(
         action: Int,
         x: Float,
-        y: Float
+        y: Float,
+        eventTime: Long
     ): Boolean {
         var handled = false
-        if (action == ACTION_DOWN || action == ACTION_UP || action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_MOVE) {
+        if (action == ACTION_DOWN || action == ACTION_UP || action == ACTION_CANCEL || action == ACTION_MOVE) {
 
 
             keysLine0.forEach {
@@ -128,11 +168,22 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
             //start tap/motion
             if (action == ACTION_DOWN) {
                 lastKey = null
+
+                events.clear()
             }
 
             //end tap/motion
             if (action == ACTION_UP || action == ACTION_CANCEL) {
                 lastKey?.selected = false
+
+                events.clear()
+            }
+
+
+            events.add(MovePoint(x, y, eventTime))
+
+            if (events.size >= 30) {
+                //events.removeFirst()
             }
         }
 
