@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#345983"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        tools:context=".MainActivity">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="#345923"
+            app:layout_constraintBottom_toTopOf="@id/keyboardView"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Space
+            android:id="@+id/inputSpace"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/input_height"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <com.elevenetc.concepts.keyboard.KeyboardView
+            android:id="@+id/keyboardView"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/keyboard_height"
+            app:layout_constraintTop_toTopOf="@id/inputSpace" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.elevenetc.concepts.keyboard.TouchView
+        android:alpha="0.5"
+        android:id="@+id/touchView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/keyboards_zone_height"
+        android:layout_gravity="bottom"
+        android:background="#2196F3" />
+
+</FrameLayout>
