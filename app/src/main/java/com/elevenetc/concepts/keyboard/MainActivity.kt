@@ -30,8 +30,6 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = Ad()
         disableClipOnParents(root)
 
-
-
         keyboardManager = KeyboardManager(root, recyclerView, keyboardView, touchView)
     }
 
@@ -79,8 +77,6 @@ class MainActivity : AppCompatActivity() {
                 keyboardView.onTouchEvent(it)
             }
         }
-
-        var prev = 0
 
         private fun open() {
 

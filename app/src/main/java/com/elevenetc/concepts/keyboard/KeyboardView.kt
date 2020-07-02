@@ -3,9 +3,11 @@ package com.elevenetc.concepts.keyboard
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.MotionEvent.*
 import android.view.View
+import com.elevenetc.utils.kotlin.math.ElevenMath
 import java.util.*
 
 class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
@@ -68,17 +70,17 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
 
         var prevTime = 0L
         var diffTime = 0L
-        for ((index, it) in events.withIndex()) {
+        for ((index, point) in events.withIndex()) {
             //TODO: perf: O(x^2) per draw call
 
-            val x = it.x
-            val y = it.y
+            val x = point.x
+            val y = point.y
             if (index == 0) {
                 path.moveTo(x, y)
-                prevTime = it.time
+                prevTime = point.time
             } else {
 
-                diffTime = it.time - prevTime
+                diffTime = point.time - prevTime
 
                 if (diffTime > 20) {
                     canvas.drawCircle(x, y, 10f, keyPaint)
@@ -86,16 +88,40 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
                     canvas.drawCircle(x, y, 30f, keyPaint)
                 }
 
-                prevTime = it.time
+                prevTime = point.time
 
                 path.lineTo(x, y)
+            }
+        }
+
+        Log.d("angle", "---")
+        Log.d("angle", "total: " + events.size)
+
+        val step = 10
+        for (i in 0 until events.size step step) {
+            val p0: MovePoint? = events.getOrNull(0)
+            val p1: MovePoint? = events.getOrNull(i + step / 2)
+            val p2: MovePoint? = events.getOrNull(i + step)
+
+            if (p0 != null && p1 != null && p2 != null) {
+                val p0x = p0.x
+                val p0y = p0.y
+                val p1x = p1.x
+                val p1y = p1.y
+                val p2x = p2.x
+                val p2y = p2.y
+                val angleBetween = m.angleBetween(
+                    p0x, p0y, p1x, p1y,
+                    p1x, p1y, p2x, p2y
+                )
+                Log.d("angle", angleBetween.toString())
             }
         }
 
         canvas.drawPath(path, pathPaint)
     }
 
-
+    val m: ElevenMath = ElevenMath.create()
 
     var moving = false
     var lastKey: Key? = null
@@ -192,16 +218,6 @@ class KeyboardView(context: Context?, attrs: AttributeSet?) : View(context, attr
         }
 
         return handled
-    }
-
-    class TapKeeper {
-        fun onEvent(event: MotionEvent) {
-            if (event.action == ACTION_DOWN) {
-
-            } else if (event.action == ACTION_UP) {
-
-            }
-        }
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
